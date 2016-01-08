@@ -131,6 +131,8 @@ def sync_repo(filepath):
         revpath = "rev:{0}".format(rev)
         print("{0}/{1} Fetching revision {2}".
               format(i, len(missing_revs), rev))
+        # Bypass dropbox python package due to missing sharing_info
+        # https://github.com/dropbox/dropbox-sdk-python/issues/40
         r = requests.post(
             "https://api.dropboxapi.com/2/files/get_metadata",
             headers={'Authorization': "Bearer {0}".format(config.token),
