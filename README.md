@@ -1,6 +1,6 @@
 # dropblame
 
-A Python command line tool which will convert the revision history of a Dropbox file into a readonly git repository, so you can run `git blame` or `git diff`. Suggested by [@cgranade](https://twitter.com/cgranade/status/683957037173059584).
+A Python command line tool which will convert the revision history of a Dropbox file into a git repository, so you can run `git blame` or `git diff`. Suggested by [@cgranade](https://twitter.com/cgranade/status/683957037173059584).
 
 ## Dependencies
 
@@ -10,11 +10,11 @@ A Python command line tool which will convert the revision history of a Dropbox 
 
 ## Usage
 
-drop blame /path/to/Dropbox/file
+`drop blame /path/to/Dropbox/file`
 
 Syncs Dropbox revisions to a git repo and runs git blame. Any additional arguments will be passed to git blame.
 
-drop cd /path/to/Dropbox/file
+`drop cd /path/to/Dropbox/file`
 
 Syncs Dropbox revisions to a git repo and then opens a shell there, if you want to run diff or other operations. The commit messages contain Dropbox revision ids.
 
