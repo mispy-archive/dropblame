@@ -14,4 +14,4 @@ You will need git-- this doesn't reimplement git blame, it just takes all the re
 
 `drop blame /path/to/Dropbox/file`
 
-Any additional arguments will be passed to git blame. First time you run this you will be asked for configuration details to connect to Dropbox, which will be stored in ~/.dropblame/config.
+Any additional arguments will be passed to git blame. First time you run this you will be asked for configuration details to connect to Dropbox, which will be stored in ~/.dropblame/config.yml.
