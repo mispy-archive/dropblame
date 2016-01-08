@@ -153,19 +153,31 @@ def sync_repo(filepath):
 
     return gitdir
 
-usage = """
-Usage: {0} blame /path/to/Dropbox/file
-
-Any additional arguments will be passed to git blame. First time you run this
-you will be asked for configuration details to connect to Dropbox, which will
-be stored in ~/.dropblame/config.yml.
-
-Note that this can only go back as far as the Dropbox API will allow, which is
-currently 100 revisions.
-""".format(os.path.basename(sys.argv[0])).strip()
-
 
 def print_usage():
+    usage = """
+USAGE
+
+{0} blame /path/to/Dropbox/file
+
+Syncs Dropbox revisions to a git repo and runs git blame. Any additional
+arguments will be passed to git blame.
+
+{1} cd /path/to/Dropbox/file
+
+Syncs Dropbox revisions to a git repo and then opens a shell there, if
+you want to run diff or other operations. Note that the repo is readonly.
+
+---
+
+The first time you run drop you will be asked for configuration details to
+connect to Dropbox, which will be stored in ~/.dropblame/config.yml.
+
+Note that this tool can only go back as far as the Dropbox API will allow,
+which is currently 100 revisions.
+    """.format(os.path.basename(sys.argv[0]),
+               os.path.basename(sys.argv[0])).strip()
+
     print(usage)
 
 if __name__ == '__main__':
@@ -180,7 +192,7 @@ if __name__ == '__main__':
         print_usage()
         sys.exit(0)
 
-    if sys.argv[1] != "blame":
+    if sys.argv[1] not in ["blame", "cd"]:
         print_usage()
         sys.exit(1)
 
@@ -192,8 +204,13 @@ if __name__ == '__main__':
         sys.exit(1)
 
     gitdir = sync_repo(path)
-    p = subprocess.Popen("git blame {0} {1}".
-                         format(os.path.basename(path),
-                                ' '.join(sys.argv[3:])),
-                         shell=True, cwd=gitdir)
-    p.wait()
+
+    if sys.argv[1] == "cd":
+        p = subprocess.Popen("$SHELL", shell=True, cwd=gitdir)
+        p.wait()
+    else:
+        p = subprocess.Popen("git blame {0} {1}".
+                             format(os.path.basename(path),
+                                    ' '.join(sys.argv[3:])),
+                             shell=True, cwd=gitdir)
+        p.wait()
