@@ -20,7 +20,7 @@ Syncs Dropbox revisions to a git repo and then opens a shell there, if you want 
 
 ## Notes
 
-The first time you run drop you will be asked for configuration details to connect to Dropbox, which will be stored in ~/.dropblame/config.yml.
+The first time you run `drop` you will be asked for configuration details to connect to Dropbox, which will be stored in ~/.dropblame/config.yml.
 
 Note that this tool can only go back as far as the Dropbox API will allow, which is currently 100 revisions.
 
