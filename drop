@@ -156,9 +156,9 @@ def sync_repo(filepath):
 usage = """
 Usage: {0} blame /path/to/Dropbox/file
 
-Other arguments will be passed to git blame. First time you run this you will
-be asked for configuration details to connect to Dropbox, which will be stored
-in ~/.dropblame/config.
+Any additional arguments will be passed to git blame. First time you run this
+you will be asked for configuration details to connect to Dropbox, which will
+be stored in ~/.dropblame/config.
 """.format(os.path.basename(sys.argv[0])).strip()
 
 
@@ -181,14 +181,16 @@ if __name__ == '__main__':
         print_usage()
         sys.exit(1)
 
-    if not os.path.exists(os.path.expanduser(sys.argv[2])):
+    path = os.path.expanduser(sys.argv[2])
+
+    if not os.path.exists(path):
         print("cannot access {0}: No such file or directory".
               format(sys.argv[2]))
         sys.exit(1)
 
-    path = os.path.abspath(sys.argv[2])
-
     gitdir = sync_repo(path)
-    p = subprocess.Popen("git blame {0}".format(os.path.basename(path)),
+    p = subprocess.Popen("git blame {0} {1}".
+                         format(os.path.basename(path),
+                                ' '.join(sys.argv[3:])),
                          shell=True, cwd=gitdir)
     p.wait()
