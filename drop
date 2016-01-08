@@ -6,10 +6,10 @@ import dropbox
 import subprocess
 import requests
 import json
-from dropbox.files import WriteMode
-from dropbox.exceptions import ApiError, AuthError
-from IPython import embed
+from dropbox.exceptions import AuthError
 import yaml
+import pipes
+
 
 class Config(object):
     def __init__(self):
@@ -28,8 +28,23 @@ class Config(object):
 
         self.load_config()
 
+    def read_dropbox_dir(self):
+        while self.dropbox_dir is None:
+            path = raw_input("Please enter the path to your Dropbox " +
+                             "directory (default: ~/Dropbox): ").strip()
+            if path == '':
+                path = "~/Dropbox"
+
+            if not os.path.exists(os.path.expanduser(path)):
+                print("No directory could be found at {0}".format(path))
+                continue
+
+            self.dropbox_dir = os.path.expanduser(path)
+
     def read_token(self):
-        print("To link this to Dropbox, you will first need to generate an access token: https://blogs.dropbox.com/developers/2014/05/generate-an-access-token-for-your-own-account/")
+        print("\nTo link this to Dropbox, you will first need to generate " +
+              "an access token: https://blogs.dropbox.com/developers/2014/" +
+              "05/generate-an-access-token-for-your-own-account/")
         while self.token is None:
             token = raw_input("Enter your token here: ").strip()
             if token == '':
@@ -45,7 +60,6 @@ class Config(object):
 
             print("Token looks good, thanks!")
             self.token = token
-        self.save_config()
 
     def load_config(self):
         data = {}
@@ -55,16 +69,14 @@ class Config(object):
         if 'dropbox_dir' in data:
             self.dropbox_dir = data['dropbox_dir']
         else:
-            path = raw_input("Please enter the path to your Dropbox directory (default: ~/Dropbox): ").strip()
-            if path == '':
-                path = "~/Dropbox"
-            self.dropbox_dir = os.path.expanduser(path)
-            self.save_config()
+            self.read_dropbox_dir()
 
         if 'token' in data:
             self.token = data['token']
         else:
             self.read_token()
+
+        self.save_config()
 
     def save_config(self):
         data = {}
@@ -82,15 +94,18 @@ def cmd(line, cwd=None):
     p = subprocess.Popen(line, shell=True, cwd=cwd, stdout=subprocess.PIPE)
     return p.communicate()[0]
 
+
 # Convert the revision history of a given file into a git repository
 def sync_repo(filepath):
     basename = os.path.basename(filepath)
-    relpath = os.path.relpath(filepath, os.path.realpath(config.dropbox_dir))
+    relpath = os.path.relpath(os.path.realpath(filepath),
+                              os.path.realpath(config.dropbox_dir))
     gitdir = os.path.join(config.storage_dir, relpath)
     if not os.path.exists(gitdir):
         os.makedirs(gitdir)
 
-    revs = [entry.rev for entry in dbx.files_list_revisions("/"+relpath, limit=100).entries]
+    revs = [entry.rev for entry in
+            dbx.files_list_revisions("/"+relpath, limit=100).entries]
     revs.reverse()
 
     current_revs = []
@@ -99,7 +114,6 @@ def sync_repo(filepath):
     else:
         cmd("git init", gitdir)
 
-
     # As we find more user ids who contributed to the file, we
     # request and cache their info here
     userinfo = {}
@@ -107,14 +121,16 @@ def sync_repo(filepath):
     missing_revs = [rev for rev in revs if rev not in current_revs]
 
     if len(missing_revs) > 0:
-        print("Found {0} revisions to download".format(len(missing_revs)))
+        print("Found {0} new revisions to download for {1}".
+              format(len(missing_revs), relpath))
 
     i = 0
     for rev in missing_revs:
         i += 1
         localpath = os.path.join(gitdir, basename)
         revpath = "rev:{0}".format(rev)
-        print("{0}/{1} Fetching revision {2}".format(i, len(missing_revs), rev))
+        print("{0}/{1} Fetching revision {2}".
+              format(i, len(missing_revs), rev))
         r = requests.post(
             "https://api.dropboxapi.com/2/files/get_metadata",
             headers={'Authorization': "Bearer {0}".format(config.token),
@@ -130,15 +146,48 @@ def sync_repo(filepath):
             author_name = userinfo[author_id].name.display_name
 
         dbx.files_download_to_file(localpath, revpath)
-        cmd("git add -A . && git commit -m {0} --author=\"{1} <mystery@example.org>\" --date=\"{2}\"".format(rev, author_name, meta['client_modified']), gitdir)
+        cmd(("git add -A . && git commit -m {0} --author=\"{1} " +
+            "<mystery@example.org>\" --date=\"{2}\"").
+            format(rev, pipes.quote(author_name), meta['client_modified']),
+            gitdir)
 
     return gitdir
+
+usage = """
+Usage: {0} blame /path/to/Dropbox/file
+
+Other arguments will be passed to git blame. First time you run this you will
+be asked for configuration details to connect to Dropbox, which will be stored
+in ~/.dropblame/config.
+""".format(os.path.basename(sys.argv[0])).strip()
+
+
+def print_usage():
+    print(usage)
 
 if __name__ == '__main__':
     config = Config()
     dbx = dropbox.Dropbox(config.token)
 
+    if len(sys.argv) < 3:
+        print_usage()
+        sys.exit(1)
+
+    if sys.argv[1] == "help":
+        print_usage()
+        sys.exit(0)
+
+    if sys.argv[1] != "blame":
+        print_usage()
+        sys.exit(1)
+
+    if not os.path.exists(os.path.expanduser(sys.argv[2])):
+        print("cannot access {0}: No such file or directory".
+              format(sys.argv[2]))
+        sys.exit(1)
+
     path = os.path.abspath(sys.argv[2])
+
     gitdir = sync_repo(path)
     p = subprocess.Popen("git blame {0}".format(os.path.basename(path)),
                          shell=True, cwd=gitdir)
