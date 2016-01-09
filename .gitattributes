@@ -1,0 +1,2 @@
+# Force shell scripts to end with \n.
+drop text eol=lf
