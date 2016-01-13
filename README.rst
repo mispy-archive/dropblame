@@ -1,17 +1,17 @@
 dropblame
 =========
 
+.. image:: https://badge.fury.io/py/dropblame.svg
+    :target: https://badge.fury.io/py/dropblame
+
 A Python command line tool which will convert the revision history of a
 Dropbox file into a git repository, so you can run ``git blame`` or
 ``git diff``. Suggested by `@cgranade <https://twitter.com/cgranade/status/683957037173059584>`_.
 
-Dependencies
+Installation
 ------------
 
-``pip install dropbox pyyaml ndg-httpsclient``
-
-``drop`` itself is a standalone Python script; you can put it somewhere
-on your PATH, if you like!
+``pip install dropblame``
 
 Usage
 -----
