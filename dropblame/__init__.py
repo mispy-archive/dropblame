@@ -43,7 +43,7 @@ class Config(object):
 
     def read_token(self):
         print("\nTo link this to Dropbox, you will first need to generate " +
-              "an access token: https://blogs.dropbox.com/developers/2014/" +
+              "an access token: https://blogs.dropbox.com/developers/2014/"
               "05/generate-an-access-token-for-your-own-account/")
         while self.token is None:
             token = raw_input("Enter your token here: ").strip()
@@ -182,7 +182,7 @@ which is currently 100 revisions.
 
     print(usage)
 
-if __name__ == '__main__':
+def main():
     config = Config()
     dbx = dropbox.Dropbox(config.token)
 
@@ -216,3 +216,6 @@ if __name__ == '__main__':
                                     ' '.join(sys.argv[3:])),
                              shell=True, cwd=gitdir)
         p.wait()
+
+if __name__ == '__main__':
+    main()
