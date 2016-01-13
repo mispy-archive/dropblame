@@ -182,7 +182,9 @@ which is currently 100 revisions.
 
     print(usage)
 
+
 def main():
+    global config, dbx
     config = Config()
     dbx = dropbox.Dropbox(config.token)
 
