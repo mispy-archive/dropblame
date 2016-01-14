@@ -8,7 +8,7 @@ dropblame
 
 A Python command line tool which will convert the revision history of a
 Dropbox file into a git repository, so you can run ``git blame`` or
-``git diff``. Suggested by `@cgranade <https://twitter.com/cgranade/status/683957037173059584>`_.
+``git diff``. Suggested by `@cgranade <https://twitter.com/cgranade/status/683957037173059584>`_ since lots of physics people use Dropbox as a sort of low-barrier version control.
 
 Installation
 ------------
