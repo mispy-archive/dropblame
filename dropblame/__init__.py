@@ -213,10 +213,8 @@ def main():
         p = subprocess.Popen("$SHELL", shell=True, cwd=gitdir)
         p.wait()
     else:
-        p = subprocess.Popen("git blame {0} {1}".
-                             format(os.path.basename(path),
-                                    ' '.join(sys.argv[3:])),
-                             shell=True, cwd=gitdir)
+        cmd = ['git', 'blame', os.path.basename(path)] + sys.argv[3:]
+        p = subprocess.Popen(cmd, cwd=gitdir)
         p.wait()
 
 if __name__ == '__main__':
